@@ -75,6 +75,11 @@ export class GeminiService {
         await wait(5000); // Wait 5 seconds between polls
         operation = await this.ai!.operations.getVideosOperation({ operation: operation });
         console.log("Polling status...", operation);
+        
+        // Safety check for errors during polling
+        if (operation.error) {
+           throw new Error(operation.error.message || "Unknown error during video generation");
+        }
       }
 
       // Check for errors in the operation response
@@ -96,7 +101,9 @@ export class GeminiService {
       // Fetch the actual video file. 
       // CRITICAL: Must append API key to the download link.
       const key = process.env.API_KEY;
-      const downloadUrl = `${videoUri}&key=${key}`;
+      const downloadUrl = videoUri.includes('?') 
+        ? `${videoUri}&key=${key}` 
+        : `${videoUri}?key=${key}`;
       
       const response = await fetch(downloadUrl);
       if (!response.ok) {

@@ -103,8 +103,13 @@ const App: React.FC = () => {
     } catch (error: any) {
       console.error(error);
       
-      // If error is related to API key, prompt again
-      if (error.message && (error.message.includes("Requested entity was not found") || error.message.includes("API key not valid"))) {
+      const errorMessage = error.message || (error.error && error.error.message) || "Unknown error";
+
+      // If error is related to API key, prompt again ONLY if AI Studio is available
+      // This prevents local users from being locked out when a 404 occurs (e.g. model not found)
+      const isAIStudioAvailable = typeof window !== 'undefined' && window.aistudio && window.aistudio.openSelectKey;
+
+      if (isAIStudioAvailable && (errorMessage.includes("Requested entity was not found") || errorMessage.includes("API key not valid"))) {
          setApiKeySet(false);
       }
 
@@ -113,7 +118,7 @@ const App: React.FC = () => {
           return {
             ...msg,
             status: 'error',
-            error: error.message || "Something went wrong while generating the video."
+            error: errorMessage
           };
         }
         return msg;
@@ -148,8 +153,13 @@ const App: React.FC = () => {
                 Select API Key via Google
               </button>
             ) : (
-                <div className="text-sm text-red-400 bg-red-900/20 p-4 rounded-lg border border-red-900">
-                    API Key configuration is missing. Please run in an environment with Google AI Studio integration or configure `process.env.API_KEY`.
+                <div className="text-sm text-left text-gray-300 bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <p className="font-semibold text-white mb-2">Local Setup Required:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-gray-400">
+                        <li>Create a file named <code className="text-primary-400">.env</code> in your project root.</li>
+                        <li>Add your key: <code className="text-primary-400">API_KEY=your_key_here</code></li>
+                        <li>Restart the server.</li>
+                    </ol>
                 </div>
             )}
           </div>
