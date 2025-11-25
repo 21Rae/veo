@@ -1,0 +1,8 @@
+{
+  "name": "Veo Video Agent",
+  "description": "A powerful AI agent capable of generating high-quality videos from text prompts and images using Google's Veo model.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
